@@ -124,50 +124,9 @@ enum CameraFollowMode {
 
 
 
-
-################################
-#          Math - 3D           #
-################################
-
-#proc transform_screen_space_to_world x, y, z {
-#    return_x = 0;
-#}
-
-
-
-
 ################################
 #             Misc             #
 ################################
 
 %define OBJECT_ARRAY_SIZE 18
-
-
-
-# print a message to the project_messages list
-proc print text, duration {
-    add $text to project_messages;
-    if $duration == "" {
-        add 5 to project_messages;
-    } else {
-        add $duration to project_messages;
-    }
-}
-
-
-# print a message to the project_messages list, only if the previous message is different
-proc print_no_duplicates text, duration {
-    if (project_messages[length project_messages - 1] == $text) {
-        project_messages[length project_messages] = $duration;
-    } else {
-        add $text to project_messages;
-        if $duration == "" {
-            add 5 to project_messages;
-        } else {
-            add $duration to project_messages;
-        }
-    }
-}
-
-
 
