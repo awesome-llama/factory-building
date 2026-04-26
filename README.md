@@ -2,7 +2,7 @@
 
 ![factory building](thumbnail.jpg)
 
-This project is a small demo of realistic 3D rendering in Scratch with baked raytraced lighting. Although textured 3D projects existed at the time (December 2022), this was the first of its kind for baked lighting.
+This project is a small demo of realistic 3D rendering in Scratch with baked raytraced lighting. Although textured 3D projects existed at the time (December 2022), this kind of baked lighting was unexplored.
 
 I continued with this idea and created [The Mast](https://scratch.mit.edu/projects/861541218), which is a proper game.
 
