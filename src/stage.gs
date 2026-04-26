@@ -10,6 +10,9 @@ costumes "costumes/darkchecker.png";
 # reset the project on first load (the variable defaults to false). This allows hard_reset to run.
 var goboscript_init_done = false;
 
+# first time the user plays, to set things like resolution
+var first_time_playing = true;
+
 # delta time, the elapsed time since the last frame.
 var dt;
 
@@ -88,10 +91,6 @@ var resolution = 2;
 var require_transform_all = false;
 
 var show_render_layer_refs;
-var show_render_layer_points;
-var show_render_layer_wireframe;
-var show_render_layer_bb;
-var show_render_layer_collision;
 var show_render_layer_texture;
 
 list resolution_options = [20, 1, 2, 3, 4, 5, 6, 9, 12, 15];
@@ -99,8 +98,6 @@ list resolution_options = [20, 1, 2, 3, 4, 5, 6, 9, 12, 15];
 ################################
 #            Model             #
 ################################
-
-# NOTE: These lists differ from TM3D v1, they are now the main lists for rendering
 
 # all static and dynamic vertices occupy the same list. A separate list keeps track of the regions in this list and their behavior.
 
@@ -147,15 +144,13 @@ list XYZ floor_triangle_normals;
 
 
 on "sys.hard_reset" {
+    first_time_playing = true;
+
     FOV = 110;
     zclip = 0.1;
     screen_radius = 240;
 
     show_render_layer_refs = false;
-    show_render_layer_points = false;
-    show_render_layer_wireframe = false;
-    show_render_layer_bb = false;
-    show_render_layer_collision = false;
     show_render_layer_texture = true;
 
     reset_keybinds;
@@ -168,9 +163,18 @@ onflag {
         broadcast "sys.hard_reset";
     }
 
+    if (first_time_playing) {
+        if ($tw_is_compiled) {
+            resolution = 4;
+        } else {
+            resolution = 12;
+        }
+        first_time_playing = false;
+    }
+
     broadcast "sys.initalize"; # all receivers must complete within the frame, no loops allowed to start. Think of it as a soft reset.
     broadcast "sys.start_main_loop"; # schedule main loop start after init
-    #broadcast "sound.start_player_steps_loop";
+    broadcast "sound.start";
 }
 
 

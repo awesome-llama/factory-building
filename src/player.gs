@@ -3,7 +3,6 @@
 %include lib/common
 
 costumes "costumes/blank.svg";
-#sounds "sounds/steps/step_dull_01.mp3", "sounds/steps/step_dull_02.mp3", "sounds/steps/step_dull_03.mp3", "sounds/steps/step_dull_04.mp3", "sounds/steps/step_dull_05.mp3";
 hide;
 
 var free_cam_speed = 2.5;
@@ -46,34 +45,6 @@ on "sys.initalize" {
     step_x = player_x;
     step_y = player_y;
 }
-
-
-on "sound.update" {
-    if (cam_mode == CameraFollowMode.PLAYER) {
-        movement_dist = VEC2_LEN((player_x-step_x), (player_y-step_y));
-        if (movement_dist > 0.9 and movement_dist < 20) {
-            set_volume 30;
-            start_sound random(1, 5);
-            step_x = player_x;
-            step_y = player_y;
-        }
-        
-    }
-}
-
-
-# on "sound.start_player_steps_loop" {
-#     step_x = player_x;
-#     step_y = player_y;
-#     forever {
-#         until (cam_mode == "walk") {};
-#         if (VEC2_LEN((player_x-step_x), (player_y-step_y)) > 1) {
-#             start_sound random(1, 5);
-#             step_x = player_x;
-#             step_y = player_y;
-#         }
-#     }
-# }
 
 
 onkey "up arrow" {
@@ -170,6 +141,8 @@ proc controls  {
         cam_y = player_y;
         cam_z = player_z + eye_height;
     }
+
+    rotate_camera (key_pressed(keybind_look_left) - key_pressed(keybind_look_right)) * dt * 120, (key_pressed(keybind_look_up) - key_pressed(keybind_look_down)) * dt * 120;
 }
 
 

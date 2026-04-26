@@ -22,14 +22,14 @@ var clone_ID = 0;
 %define ABD(LIST_NUMBER) sound_data[ABI(LIST_NUMBER)]
 
 
-on "sys.initalize" {
+on "sound.start" {
     if (true) { delete_this_clone; } # only the original sprite can continue with this script
 
     # Add sounds:
     delete sound_data;
     clone_ID = 0;
     add_sound "electric_hum", 60, 5, 3.5, 1.5, 5, 9, 1; # near red light
-    add_sound "vent_fan", 100, 1.9, 19, 0.5, 6, 16, 2; # garage bench
+    add_sound "vent_fan", 100, 1.9, 19, 0.5, 10, 10, 2; # garage bench
 
     clone_ID = 0; # 0 is the original sprite
 

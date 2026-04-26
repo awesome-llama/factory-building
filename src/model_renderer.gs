@@ -37,11 +37,13 @@ on "sys.render_geometry" {
 
     # Render layers:
     if (show_render_layer_texture) { render_textured_scene; }
-    if (show_render_layer_refs) { render_refs; }
-    if (show_render_layer_points) { render_points; }
-    if (show_render_layer_wireframe) { render_wireframe; }
-    if (show_render_layer_bb) { render_bounding_boxes; }
-    if (show_render_layer_collision) { render_collision; }
+    if (show_render_layer_refs) {
+        render_refs;
+        #render_points;
+        #render_wireframe;
+        #render_bounding_boxes;
+        #render_collision;
+    }
 }
 
 

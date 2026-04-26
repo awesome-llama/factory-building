@@ -15,14 +15,10 @@ sounds
 hide;
 
 
-on "sys.initalize" {
+on "sound.start" {
     step_x = player_x;
     step_y = player_y;
-    broadcast "sound.start_step_sounds";
-}
-
-
-on "sound.start_step_sounds" {
+    
     set_volume 100;
     forever {
         until (cam_mode == CameraFollowMode.PLAYER) {}
