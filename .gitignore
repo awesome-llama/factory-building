@@ -1,0 +1,25 @@
+﻿__pycache__
+
+
+# For development of this project
+project.json
+*.sb3
+test*.py
+TODO.md
+test/
+temp/
+holding/
+discard/
+
+
+# Rhinoceros 3D
+*.3dmbak
+*.3dm.rhl
+*.dmp
+
+
+# Blender autosaves
+*.blend1
+*.blend2
+*.blend3
+*.blend4

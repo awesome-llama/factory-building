@@ -1,0 +1,43 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "goboscript: build project",
+			"type": "shell",
+			"command": "goboscript",
+			"args": [
+				"build",
+				"src",
+				"-o", "project.sb3"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": false
+			}
+		},
+		{
+			"label": "post-process",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"src/post-processing/main.py",
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": false
+			}
+		},
+		{
+			"label": "Build",
+			"dependsOrder": "sequence",
+			"dependsOn": [
+				"goboscript: build project",
+				"post-process"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		}
+	]
+}
