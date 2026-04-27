@@ -7,20 +7,20 @@ costumes "costumes/blank.svg";
 hide;
 
 
-list fill_temp;
-list depth;
-list time;
+list TTF_Fill_Temp;
+list TTF_Depth;
+list TTF_Time;
 
-var DISPLAY__Resolution = 2; # Deliberately kept separate from global resolution var so the tri filler can be edited separately
+var TTF_Resolution = 2; # Deliberately kept separate from global resolution var so the tri filler can be edited separately
 
 on "sys.initalize" {
-    INTERNAL__Internal_Setup;
+    TTF_internal_setup;
 }
 
 on "sys.hard_reset" {
-    delete fill_temp;
-    delete depth;
-    delete time;
+    delete TTF_Fill_Temp;
+    delete TTF_Depth;
+    delete TTF_Time;
 }
 
 
@@ -30,10 +30,10 @@ on "sys.render_geometry" {
     apply_object_transform require_transform_all;
     require_transform_all = false;
 
-    DISPLAY__Resolution = resolution;
+    TTF_Resolution = resolution;
 
-    if (DISPLAY__Resolution < 1) { DISPLAY__Resolution = 1; }
-    if (last_resolution != DISPLAY__Resolution) { INTERNAL__Internal_Setup; }
+    if (TTF_Resolution < 1) { TTF_Resolution = 1; }
+    if (last_resolution != TTF_Resolution) { TTF_internal_setup; }
 
     # Render layers:
     if (show_render_layer_texture) { render_textured_scene; }
@@ -41,7 +41,6 @@ on "sys.render_geometry" {
         render_refs;
         #render_points;
         #render_wireframe;
-        #render_bounding_boxes;
         #render_collision;
     }
 }
@@ -234,22 +233,6 @@ proc render_wireframe {
 }
 
 
-proc render_bounding_boxes {
-    set_pen_color "#ffffa0";
-    set_pen_transparency 70;
-    set_pen_size 1;
-    i = 0;
-    repeat (length object_names) {
-        
-        # don't draw if any values are infinite
-        draw_line_ws objects[i+8], objects[i+9], objects[i+10], objects[i+11], objects[i+12], objects[i+13];
-
-        i += OBJECT_ARRAY_SIZE;
-        change_pen_hue 38.1966; # calculated from golden angle
-    }
-}
-
-
 
 proc render_collision {
     set_pen_color "#c69292";
@@ -276,26 +259,20 @@ proc render_collision {
 
 
 
-var INTERNAL__trix;
-var INTERNAL__triy;
-var INTERNAL__triz;
-
-var loaded_textures_index;
-
 
 %define LERP_U_A(START, END) (((START) * (1-t_a)) + ((END) * t_a))
 %define LERP_U_B(START, END) (((START) * (1-t_b)) + ((END) * t_b))
 
 proc render_textured_scene {
-    _3D__This_Frame = ((_3D__This_Frame+1)%256);
+    TTF_This_Frame = ((TTF_This_Frame+1)%256);
 
     i = 0;
     repeat (length object_names) {
         if (objects[i+14]) { # in bounding box
 
-            _3D__Texture_Offset = 0;
-            _3D__Texture_Width = 440;
-            _3D__Texture_Height = 440;
+            TTF_Texture_Offset = 0;
+            TTF_Texture_Width = 440;
+            TTF_Texture_Height = 440;
 
             j = objects[i+17] + 1;
             repeat (objects[i+18]) {
@@ -311,26 +288,26 @@ proc render_textured_scene {
                         if (depth_v1 > zclip) {
                             if (depth_v2 > zclip) {
                                 # fully visible
-                                Fill_Scanline_Triangle vtx_position_ss[tri_vi0[j]].x, vtx_position_ss[tri_vi0[j]].y, vtx_position_ss[tri_vi1[j]].x, vtx_position_ss[tri_vi1[j]].y, vtx_position_ss[tri_vi2[j]].x, vtx_position_ss[tri_vi2[j]].y, depth_v0, depth_v1, depth_v2, tri_tex0[j].x, tri_tex0[j].y, tri_tex1[j].x, tri_tex1[j].y, tri_tex2[j].x, tri_tex2[j].y;
+                                TTF_Fill_Scanline_Triangle vtx_position_ss[tri_vi0[j]].x, vtx_position_ss[tri_vi0[j]].y, vtx_position_ss[tri_vi1[j]].x, vtx_position_ss[tri_vi1[j]].y, vtx_position_ss[tri_vi2[j]].x, vtx_position_ss[tri_vi2[j]].y, depth_v0, depth_v1, depth_v2, tri_tex0[j].x, tri_tex0[j].y, tri_tex1[j].x, tri_tex1[j].y, tri_tex2[j].x, tri_tex2[j].y;
                             } else {
                                 # v2 behind
                                 t_a = UNLERP(depth_v0, depth_v2, zclip);
                                 t_b = UNLERP(depth_v1, depth_v2, zclip);
-                                Fill_Scanline_Triangle vtx_position_ss[tri_vi0[j]].x, vtx_position_ss[tri_vi0[j]].y, vtx_position_ss[tri_vi1[j]].x, vtx_position_ss[tri_vi1[j]].y, LERP_U_A(vtx_position_cs[tri_vi0[j]].x, vtx_position_cs[tri_vi2[j]].x)*f/zclip, LERP_U_A(vtx_position_cs[tri_vi0[j]].y, vtx_position_cs[tri_vi2[j]].y)*f/zclip, depth_v0, depth_v1, zclip, tri_tex0[j].x, tri_tex0[j].y, tri_tex1[j].x, tri_tex1[j].y, LERP_U_A(tri_tex0[j].x, tri_tex2[j].x), LERP_U_A(tri_tex0[j].y, tri_tex2[j].y);
-                                Fill_Scanline_Triangle LERP_U_A(vtx_position_cs[tri_vi0[j]].x, vtx_position_cs[tri_vi2[j]].x)*f/zclip, LERP_U_A(vtx_position_cs[tri_vi0[j]].y, vtx_position_cs[tri_vi2[j]].y)*f/zclip, vtx_position_ss[tri_vi1[j]].x, vtx_position_ss[tri_vi1[j]].y, LERP_U_B(vtx_position_cs[tri_vi1[j]].x, vtx_position_cs[tri_vi2[j]].x)*f/zclip, LERP_U_B(vtx_position_cs[tri_vi1[j]].y, vtx_position_cs[tri_vi2[j]].y)*f/zclip, zclip, depth_v1, zclip, LERP_U_A(tri_tex0[j].x, tri_tex2[j].x), LERP_U_A(tri_tex0[j].y, tri_tex2[j].y), tri_tex1[j].x, tri_tex1[j].y, LERP_U_B(tri_tex1[j].x, tri_tex2[j].x), LERP_U_B(tri_tex1[j].y, tri_tex2[j].y);
+                                TTF_Fill_Scanline_Triangle vtx_position_ss[tri_vi0[j]].x, vtx_position_ss[tri_vi0[j]].y, vtx_position_ss[tri_vi1[j]].x, vtx_position_ss[tri_vi1[j]].y, LERP_U_A(vtx_position_cs[tri_vi0[j]].x, vtx_position_cs[tri_vi2[j]].x)*f/zclip, LERP_U_A(vtx_position_cs[tri_vi0[j]].y, vtx_position_cs[tri_vi2[j]].y)*f/zclip, depth_v0, depth_v1, zclip, tri_tex0[j].x, tri_tex0[j].y, tri_tex1[j].x, tri_tex1[j].y, LERP_U_A(tri_tex0[j].x, tri_tex2[j].x), LERP_U_A(tri_tex0[j].y, tri_tex2[j].y);
+                                TTF_Fill_Scanline_Triangle LERP_U_A(vtx_position_cs[tri_vi0[j]].x, vtx_position_cs[tri_vi2[j]].x)*f/zclip, LERP_U_A(vtx_position_cs[tri_vi0[j]].y, vtx_position_cs[tri_vi2[j]].y)*f/zclip, vtx_position_ss[tri_vi1[j]].x, vtx_position_ss[tri_vi1[j]].y, LERP_U_B(vtx_position_cs[tri_vi1[j]].x, vtx_position_cs[tri_vi2[j]].x)*f/zclip, LERP_U_B(vtx_position_cs[tri_vi1[j]].y, vtx_position_cs[tri_vi2[j]].y)*f/zclip, zclip, depth_v1, zclip, LERP_U_A(tri_tex0[j].x, tri_tex2[j].x), LERP_U_A(tri_tex0[j].y, tri_tex2[j].y), tri_tex1[j].x, tri_tex1[j].y, LERP_U_B(tri_tex1[j].x, tri_tex2[j].x), LERP_U_B(tri_tex1[j].y, tri_tex2[j].y);
                             }
                         } else {
                             if (depth_v2 > zclip) {
                                 # v1 behind
                                 t_a = UNLERP(depth_v0, depth_v1, zclip);
                                 t_b = UNLERP(depth_v2, depth_v1, zclip);
-                                Fill_Scanline_Triangle vtx_position_ss[tri_vi0[j]].x, vtx_position_ss[tri_vi0[j]].y, LERP_U_A(vtx_position_cs[tri_vi0[j]].x, vtx_position_cs[tri_vi1[j]].x)*f/zclip, LERP_U_A(vtx_position_cs[tri_vi0[j]].y, vtx_position_cs[tri_vi1[j]].y)*f/zclip, vtx_position_ss[tri_vi2[j]].x, vtx_position_ss[tri_vi2[j]].y, depth_v0, zclip, depth_v2, tri_tex0[j].x, tri_tex0[j].y, LERP_U_A(tri_tex0[j].x, tri_tex1[j].x), LERP_U_A(tri_tex0[j].y, tri_tex1[j].y), tri_tex2[j].x, tri_tex2[j].y;
-                                Fill_Scanline_Triangle LERP_U_A(vtx_position_cs[tri_vi0[j]].x, vtx_position_cs[tri_vi1[j]].x)*f/zclip, LERP_U_A(vtx_position_cs[tri_vi0[j]].y, vtx_position_cs[tri_vi1[j]].y)*f/zclip, LERP_U_B(vtx_position_cs[tri_vi2[j]].x, vtx_position_cs[tri_vi1[j]].x)*f/zclip, LERP_U_B(vtx_position_cs[tri_vi2[j]].y, vtx_position_cs[tri_vi1[j]].y)*f/zclip, vtx_position_ss[tri_vi2[j]].x, vtx_position_ss[tri_vi2[j]].y, zclip, zclip, depth_v2, LERP_U_A(tri_tex0[j].x, tri_tex1[j].x), LERP_U_A(tri_tex0[j].y, tri_tex1[j].y), LERP_U_B(tri_tex2[j].x, tri_tex1[j].x), LERP_U_B(tri_tex2[j].y, tri_tex1[j].y), tri_tex2[j].x, tri_tex2[j].y;
+                                TTF_Fill_Scanline_Triangle vtx_position_ss[tri_vi0[j]].x, vtx_position_ss[tri_vi0[j]].y, LERP_U_A(vtx_position_cs[tri_vi0[j]].x, vtx_position_cs[tri_vi1[j]].x)*f/zclip, LERP_U_A(vtx_position_cs[tri_vi0[j]].y, vtx_position_cs[tri_vi1[j]].y)*f/zclip, vtx_position_ss[tri_vi2[j]].x, vtx_position_ss[tri_vi2[j]].y, depth_v0, zclip, depth_v2, tri_tex0[j].x, tri_tex0[j].y, LERP_U_A(tri_tex0[j].x, tri_tex1[j].x), LERP_U_A(tri_tex0[j].y, tri_tex1[j].y), tri_tex2[j].x, tri_tex2[j].y;
+                                TTF_Fill_Scanline_Triangle LERP_U_A(vtx_position_cs[tri_vi0[j]].x, vtx_position_cs[tri_vi1[j]].x)*f/zclip, LERP_U_A(vtx_position_cs[tri_vi0[j]].y, vtx_position_cs[tri_vi1[j]].y)*f/zclip, LERP_U_B(vtx_position_cs[tri_vi2[j]].x, vtx_position_cs[tri_vi1[j]].x)*f/zclip, LERP_U_B(vtx_position_cs[tri_vi2[j]].y, vtx_position_cs[tri_vi1[j]].y)*f/zclip, vtx_position_ss[tri_vi2[j]].x, vtx_position_ss[tri_vi2[j]].y, zclip, zclip, depth_v2, LERP_U_A(tri_tex0[j].x, tri_tex1[j].x), LERP_U_A(tri_tex0[j].y, tri_tex1[j].y), LERP_U_B(tri_tex2[j].x, tri_tex1[j].x), LERP_U_B(tri_tex2[j].y, tri_tex1[j].y), tri_tex2[j].x, tri_tex2[j].y;
                             } else {
                                 # v1 and v2 behind
                                 t_a = UNLERP(depth_v0, depth_v1, zclip);
                                 t_b = UNLERP(depth_v0, depth_v2, zclip);
-                                Fill_Scanline_Triangle vtx_position_ss[tri_vi0[j]].x, vtx_position_ss[tri_vi0[j]].y, LERP_U_A(vtx_position_cs[tri_vi0[j]].x, vtx_position_cs[tri_vi1[j]].x)*f/zclip, LERP_U_A(vtx_position_cs[tri_vi0[j]].y, vtx_position_cs[tri_vi1[j]].y)*f/zclip, LERP_U_B(vtx_position_cs[tri_vi0[j]].x, vtx_position_cs[tri_vi2[j]].x)*f/zclip, LERP_U_B(vtx_position_cs[tri_vi0[j]].y, vtx_position_cs[tri_vi2[j]].y)*f/zclip, depth_v0, zclip, zclip, tri_tex0[j].x, tri_tex0[j].y, LERP_U_A(tri_tex0[j].x, tri_tex1[j].x), LERP_U_A(tri_tex0[j].y, tri_tex1[j].y), LERP_U_B(tri_tex0[j].x, tri_tex2[j].x), LERP_U_B(tri_tex0[j].y, tri_tex2[j].y);
+                                TTF_Fill_Scanline_Triangle vtx_position_ss[tri_vi0[j]].x, vtx_position_ss[tri_vi0[j]].y, LERP_U_A(vtx_position_cs[tri_vi0[j]].x, vtx_position_cs[tri_vi1[j]].x)*f/zclip, LERP_U_A(vtx_position_cs[tri_vi0[j]].y, vtx_position_cs[tri_vi1[j]].y)*f/zclip, LERP_U_B(vtx_position_cs[tri_vi0[j]].x, vtx_position_cs[tri_vi2[j]].x)*f/zclip, LERP_U_B(vtx_position_cs[tri_vi0[j]].y, vtx_position_cs[tri_vi2[j]].y)*f/zclip, depth_v0, zclip, zclip, tri_tex0[j].x, tri_tex0[j].y, LERP_U_A(tri_tex0[j].x, tri_tex1[j].x), LERP_U_A(tri_tex0[j].y, tri_tex1[j].y), LERP_U_B(tri_tex0[j].x, tri_tex2[j].x), LERP_U_B(tri_tex0[j].y, tri_tex2[j].y);
                             }
                         }
                     } else {
@@ -339,20 +316,20 @@ proc render_textured_scene {
                                 # v0 behind
                                 t_a = UNLERP(depth_v1, depth_v0, zclip);
                                 t_b = UNLERP(depth_v2, depth_v0, zclip);
-                                Fill_Scanline_Triangle LERP_U_A(vtx_position_cs[tri_vi1[j]].x, vtx_position_cs[tri_vi0[j]].x)*f/zclip, LERP_U_A(vtx_position_cs[tri_vi1[j]].y, vtx_position_cs[tri_vi0[j]].y)*f/zclip, vtx_position_ss[tri_vi1[j]].x, vtx_position_ss[tri_vi1[j]].y, vtx_position_ss[tri_vi2[j]].x, vtx_position_ss[tri_vi2[j]].y, zclip, depth_v1, depth_v2, LERP_U_A(tri_tex1[j].x, tri_tex0[j].x), LERP_U_A(tri_tex1[j].y, tri_tex0[j].y), tri_tex1[j].x, tri_tex1[j].y, tri_tex2[j].x, tri_tex2[j].y;
-                                Fill_Scanline_Triangle LERP_U_B(vtx_position_cs[tri_vi2[j]].x, vtx_position_cs[tri_vi0[j]].x)*f/zclip, LERP_U_B(vtx_position_cs[tri_vi2[j]].y, vtx_position_cs[tri_vi0[j]].y)*f/zclip, LERP_U_A(vtx_position_cs[tri_vi1[j]].x, vtx_position_cs[tri_vi0[j]].x)*f/zclip, LERP_U_A(vtx_position_cs[tri_vi1[j]].y, vtx_position_cs[tri_vi0[j]].y)*f/zclip, vtx_position_ss[tri_vi2[j]].x, vtx_position_ss[tri_vi2[j]].y, zclip, zclip, depth_v2, LERP_U_B(tri_tex2[j].x, tri_tex0[j].x), LERP_U_B(tri_tex2[j].y, tri_tex0[j].y), LERP_U_A(tri_tex1[j].x, tri_tex0[j].x), LERP_U_A(tri_tex1[j].y, tri_tex0[j].y), tri_tex2[j].x, tri_tex2[j].y;
+                                TTF_Fill_Scanline_Triangle LERP_U_A(vtx_position_cs[tri_vi1[j]].x, vtx_position_cs[tri_vi0[j]].x)*f/zclip, LERP_U_A(vtx_position_cs[tri_vi1[j]].y, vtx_position_cs[tri_vi0[j]].y)*f/zclip, vtx_position_ss[tri_vi1[j]].x, vtx_position_ss[tri_vi1[j]].y, vtx_position_ss[tri_vi2[j]].x, vtx_position_ss[tri_vi2[j]].y, zclip, depth_v1, depth_v2, LERP_U_A(tri_tex1[j].x, tri_tex0[j].x), LERP_U_A(tri_tex1[j].y, tri_tex0[j].y), tri_tex1[j].x, tri_tex1[j].y, tri_tex2[j].x, tri_tex2[j].y;
+                                TTF_Fill_Scanline_Triangle LERP_U_B(vtx_position_cs[tri_vi2[j]].x, vtx_position_cs[tri_vi0[j]].x)*f/zclip, LERP_U_B(vtx_position_cs[tri_vi2[j]].y, vtx_position_cs[tri_vi0[j]].y)*f/zclip, LERP_U_A(vtx_position_cs[tri_vi1[j]].x, vtx_position_cs[tri_vi0[j]].x)*f/zclip, LERP_U_A(vtx_position_cs[tri_vi1[j]].y, vtx_position_cs[tri_vi0[j]].y)*f/zclip, vtx_position_ss[tri_vi2[j]].x, vtx_position_ss[tri_vi2[j]].y, zclip, zclip, depth_v2, LERP_U_B(tri_tex2[j].x, tri_tex0[j].x), LERP_U_B(tri_tex2[j].y, tri_tex0[j].y), LERP_U_A(tri_tex1[j].x, tri_tex0[j].x), LERP_U_A(tri_tex1[j].y, tri_tex0[j].y), tri_tex2[j].x, tri_tex2[j].y;
                             } else {
                                 # v0 and v2 behind
                                 t_a = UNLERP(depth_v1, depth_v0, zclip);
                                 t_b = UNLERP(depth_v1, depth_v2, zclip);
-                                Fill_Scanline_Triangle LERP_U_A(vtx_position_cs[tri_vi1[j]].x, vtx_position_cs[tri_vi0[j]].x)*f/zclip, LERP_U_A(vtx_position_cs[tri_vi1[j]].y, vtx_position_cs[tri_vi0[j]].y)*f/zclip, vtx_position_ss[tri_vi1[j]].x, vtx_position_ss[tri_vi1[j]].y, LERP_U_B(vtx_position_cs[tri_vi1[j]].x, vtx_position_cs[tri_vi2[j]].x)*f/zclip, LERP_U_B(vtx_position_cs[tri_vi1[j]].y, vtx_position_cs[tri_vi2[j]].y)*f/zclip, zclip, depth_v1, zclip, LERP_U_A(tri_tex1[j].x, tri_tex0[j].x), LERP_U_A(tri_tex1[j].y, tri_tex0[j].y), tri_tex1[j].x, tri_tex1[j].y, LERP_U_B(tri_tex1[j].x, tri_tex2[j].x), LERP_U_B(tri_tex1[j].y, tri_tex2[j].y);
+                                TTF_Fill_Scanline_Triangle LERP_U_A(vtx_position_cs[tri_vi1[j]].x, vtx_position_cs[tri_vi0[j]].x)*f/zclip, LERP_U_A(vtx_position_cs[tri_vi1[j]].y, vtx_position_cs[tri_vi0[j]].y)*f/zclip, vtx_position_ss[tri_vi1[j]].x, vtx_position_ss[tri_vi1[j]].y, LERP_U_B(vtx_position_cs[tri_vi1[j]].x, vtx_position_cs[tri_vi2[j]].x)*f/zclip, LERP_U_B(vtx_position_cs[tri_vi1[j]].y, vtx_position_cs[tri_vi2[j]].y)*f/zclip, zclip, depth_v1, zclip, LERP_U_A(tri_tex1[j].x, tri_tex0[j].x), LERP_U_A(tri_tex1[j].y, tri_tex0[j].y), tri_tex1[j].x, tri_tex1[j].y, LERP_U_B(tri_tex1[j].x, tri_tex2[j].x), LERP_U_B(tri_tex1[j].y, tri_tex2[j].y);
                             }
                         } else {
                             if (depth_v2 > zclip) {
                                 # v0 and v1 behind
                                 t_a = UNLERP(depth_v2, depth_v0, zclip);
                                 t_b = UNLERP(depth_v2, depth_v1, zclip);
-                                Fill_Scanline_Triangle LERP_U_A(vtx_position_cs[tri_vi2[j]].x, vtx_position_cs[tri_vi0[j]].x)*f/zclip, LERP_U_A(vtx_position_cs[tri_vi2[j]].y, vtx_position_cs[tri_vi0[j]].y)*f/zclip, LERP_U_B(vtx_position_cs[tri_vi2[j]].x, vtx_position_cs[tri_vi1[j]].x)*f/zclip, LERP_U_B(vtx_position_cs[tri_vi2[j]].y, vtx_position_cs[tri_vi1[j]].y)*f/zclip, vtx_position_ss[tri_vi2[j]].x, vtx_position_ss[tri_vi2[j]].y, zclip, zclip, depth_v2, LERP_U_A(tri_tex2[j].x, tri_tex0[j].x), LERP_U_A(tri_tex2[j].y, tri_tex0[j].y), LERP_U_B(tri_tex2[j].x, tri_tex1[j].x), LERP_U_B(tri_tex2[j].y, tri_tex1[j].y), tri_tex2[j].x, tri_tex2[j].y;
+                                TTF_Fill_Scanline_Triangle LERP_U_A(vtx_position_cs[tri_vi2[j]].x, vtx_position_cs[tri_vi0[j]].x)*f/zclip, LERP_U_A(vtx_position_cs[tri_vi2[j]].y, vtx_position_cs[tri_vi0[j]].y)*f/zclip, LERP_U_B(vtx_position_cs[tri_vi2[j]].x, vtx_position_cs[tri_vi1[j]].x)*f/zclip, LERP_U_B(vtx_position_cs[tri_vi2[j]].y, vtx_position_cs[tri_vi1[j]].y)*f/zclip, vtx_position_ss[tri_vi2[j]].x, vtx_position_ss[tri_vi2[j]].y, zclip, zclip, depth_v2, LERP_U_A(tri_tex2[j].x, tri_tex0[j].x), LERP_U_A(tri_tex2[j].y, tri_tex0[j].y), LERP_U_B(tri_tex2[j].x, tri_tex1[j].x), LERP_U_B(tri_tex2[j].y, tri_tex1[j].y), tri_tex2[j].x, tri_tex2[j].y;
                             } else {
                                 # fully behind, don't draw
                             }
@@ -373,124 +350,125 @@ proc render_textured_scene {
 
 
 
-proc Fill_Scanline_Triangle x1, y1, x2, y2, x3, y3, z1, z2, z3, u1, v1, u2, v2, u3, v3 {
-    fill_temp[1] = $x1;
-    fill_temp[2] = $x2;
-    fill_temp[3] = $x3;
-    fill_temp[4] = $y1;
-    fill_temp[5] = $y2;
-    fill_temp[6] = $y3;
-    fill_temp[7] = (1/($z1*10)); # modified so that z is arbitrarily larger to prevent mysterious UV issues
-    fill_temp[8] = (1/($z2*10));
-    fill_temp[9] = (1/($z3*10));
-    fill_temp[10] = ($u1/($z1*10));
-    fill_temp[11] = ($u2/($z2*10));
-    fill_temp[12] = ($u3/($z3*10));
-    fill_temp[13] = ($v1/($z1*10));
-    fill_temp[14] = ($v2/($z2*10));
-    fill_temp[15] = ($v3/($z3*10));
-    set_pen_size (DISPLAY__Resolution*1.1);
-    INTERNAL__Lower_Vert = (4+($y2 < $y1));
-    INTERNAL__Lower_Vert += ((6-INTERNAL__Lower_Vert)*($y3 < fill_temp[INTERNAL__Lower_Vert]));
-    INTERNAL__Upper_Vert = (4+($y2 > $y1));
-    INTERNAL__Upper_Vert += ((6-INTERNAL__Upper_Vert)*($y3 > fill_temp[INTERNAL__Upper_Vert]));
-    INTERNAL__Middle_Vert = (15-(INTERNAL__Upper_Vert+INTERNAL__Lower_Vert));
-    Inner_Fill fill_temp[(INTERNAL__Lower_Vert-3)], fill_temp[(INTERNAL__Middle_Vert-3)], fill_temp[(INTERNAL__Upper_Vert-3)], fill_temp[INTERNAL__Lower_Vert], fill_temp[INTERNAL__Middle_Vert], fill_temp[INTERNAL__Upper_Vert], fill_temp[(INTERNAL__Lower_Vert+3)], fill_temp[(INTERNAL__Middle_Vert+3)], fill_temp[(INTERNAL__Upper_Vert+3)], fill_temp[(INTERNAL__Lower_Vert+6)], fill_temp[(INTERNAL__Middle_Vert+6)], fill_temp[(INTERNAL__Upper_Vert+6)], fill_temp[(INTERNAL__Lower_Vert+9)], fill_temp[(INTERNAL__Middle_Vert+9)], fill_temp[(INTERNAL__Upper_Vert+9)];
+proc TTF_Fill_Scanline_Triangle x1, y1, x2, y2, x3, y3, z1, z2, z3, u1, v1, u2, v2, u3, v3 {
+    TTF_Fill_Temp[1] = $x1;
+    TTF_Fill_Temp[2] = $x2;
+    TTF_Fill_Temp[3] = $x3;
+    TTF_Fill_Temp[4] = $y1;
+    TTF_Fill_Temp[5] = $y2;
+    TTF_Fill_Temp[6] = $y3;
+    TTF_Fill_Temp[7] = (1/($z1*10)); # modified so that z is arbitrarily larger to prevent mysterious UV issues
+    TTF_Fill_Temp[8] = (1/($z2*10));
+    TTF_Fill_Temp[9] = (1/($z3*10));
+    TTF_Fill_Temp[10] = ($u1/($z1*10));
+    TTF_Fill_Temp[11] = ($u2/($z2*10));
+    TTF_Fill_Temp[12] = ($u3/($z3*10));
+    TTF_Fill_Temp[13] = ($v1/($z1*10));
+    TTF_Fill_Temp[14] = ($v2/($z2*10));
+    TTF_Fill_Temp[15] = ($v3/($z3*10));
+    set_pen_size (TTF_Resolution*1.1);
+    TTF_Lower_Vert = (4+($y2 < $y1));
+    TTF_Lower_Vert += ((6-TTF_Lower_Vert)*($y3 < TTF_Fill_Temp[TTF_Lower_Vert]));
+    TTF_Upper_Vert = (4+($y2 > $y1));
+    TTF_Upper_Vert += ((6-TTF_Upper_Vert)*($y3 > TTF_Fill_Temp[TTF_Upper_Vert]));
+    TTF_Middle_Vert = (15-(TTF_Upper_Vert+TTF_Lower_Vert));
+    TTF_Inner_Fill TTF_Fill_Temp[(TTF_Lower_Vert-3)], TTF_Fill_Temp[(TTF_Middle_Vert-3)], TTF_Fill_Temp[(TTF_Upper_Vert-3)], TTF_Fill_Temp[TTF_Lower_Vert], TTF_Fill_Temp[TTF_Middle_Vert], TTF_Fill_Temp[TTF_Upper_Vert], TTF_Fill_Temp[(TTF_Lower_Vert+3)], TTF_Fill_Temp[(TTF_Middle_Vert+3)], TTF_Fill_Temp[(TTF_Upper_Vert+3)], TTF_Fill_Temp[(TTF_Lower_Vert+6)], TTF_Fill_Temp[(TTF_Middle_Vert+6)], TTF_Fill_Temp[(TTF_Upper_Vert+6)], TTF_Fill_Temp[(TTF_Lower_Vert+9)], TTF_Fill_Temp[(TTF_Middle_Vert+9)], TTF_Fill_Temp[(TTF_Upper_Vert+9)];
 }
 
 
-proc Inner_Fill lower_x, middle_x, higher_x, lower_y, middle_y, higher_y, lower_z, middle_z, higher_z, lower_u, middle_u, higher_u, lower_v, middle_v, higher_v {
-    INTERNAL__triy = (ceil(($lower_y/DISPLAY__Resolution))*DISPLAY__Resolution);
-    INTERNAL__triy += ((INTERNAL__Lim-INTERNAL__triy)*(INTERNAL__triy < INTERNAL__Lim));
-    INTERNAL__t2 = ((INTERNAL__triy-$lower_y)/($middle_y-$lower_y));
-    INTERNAL__x1 = ($lower_x+(($middle_x-$lower_x)*INTERNAL__t2));
-    INTERNAL__z1 = ($lower_z+(($middle_z-$lower_z)*INTERNAL__t2));
-    INTERNAL__u1 = ($lower_u+(($middle_u-$lower_u)*INTERNAL__t2));
-    INTERNAL__v1 = ($lower_v+(($middle_v-$lower_v)*INTERNAL__t2));
-    INTERNAL__t2 = ((INTERNAL__triy-$lower_y)/($higher_y-$lower_y));
-    INTERNAL__x2 = ($lower_x+(($higher_x-$lower_x)*INTERNAL__t2));
-    INTERNAL__z2 = ($lower_z+(($higher_z-$lower_z)*INTERNAL__t2));
-    INTERNAL__u2 = ($lower_u+(($higher_u-$lower_u)*INTERNAL__t2));
-    INTERNAL__v2 = ($lower_v+(($higher_v-$lower_v)*INTERNAL__t2));
-    INTERNAL__t4 = (DISPLAY__Resolution/(INTERNAL__triy-$middle_y));
-    INTERNAL__t5 = (DISPLAY__Resolution/(INTERNAL__triy-$higher_y));
-    INTERNAL__dx2 = ((INTERNAL__x2-$higher_x)*INTERNAL__t5);
-    INTERNAL__dz2 = ((INTERNAL__z2-$higher_z)*INTERNAL__t5);
-    INTERNAL__du2 = ((INTERNAL__u2-$higher_u)*INTERNAL__t5);
-    INTERNAL__dv2 = ((INTERNAL__v2-$higher_v)*INTERNAL__t5);
-    Fill_Tri_Until_target___s_point_1__s__s__s__s_point_2__s__s__s__s ($middle_y+((180-$middle_y)*($middle_y > 180))), ((INTERNAL__x1-$middle_x)*INTERNAL__t4), ((INTERNAL__z1-$middle_z)*INTERNAL__t4), ((INTERNAL__u1-$middle_u)*INTERNAL__t4), ((INTERNAL__v1-$middle_v)*INTERNAL__t4), INTERNAL__dx2, INTERNAL__dz2, INTERNAL__du2, INTERNAL__dv2;
+proc TTF_Inner_Fill lower_x, middle_x, higher_x, lower_y, middle_y, higher_y, lower_z, middle_z, higher_z, lower_u, middle_u, higher_u, lower_v, middle_v, higher_v {
+    TTF_triy = (ceil(($lower_y/TTF_Resolution))*TTF_Resolution);
+    TTF_triy += ((TTF_Lim-TTF_triy)*(TTF_triy < TTF_Lim));
+    TTF_t2 = ((TTF_triy-$lower_y)/($middle_y-$lower_y));
+    TTF_x1 = ($lower_x+(($middle_x-$lower_x)*TTF_t2));
+    TTF_z1 = ($lower_z+(($middle_z-$lower_z)*TTF_t2));
+    TTF_u1 = ($lower_u+(($middle_u-$lower_u)*TTF_t2));
+    TTF_v1 = ($lower_v+(($middle_v-$lower_v)*TTF_t2));
+    TTF_t2 = ((TTF_triy-$lower_y)/($higher_y-$lower_y));
+    TTF_x2 = ($lower_x+(($higher_x-$lower_x)*TTF_t2));
+    TTF_z2 = ($lower_z+(($higher_z-$lower_z)*TTF_t2));
+    TTF_u2 = ($lower_u+(($higher_u-$lower_u)*TTF_t2));
+    TTF_v2 = ($lower_v+(($higher_v-$lower_v)*TTF_t2));
+    TTF_t4 = (TTF_Resolution/(TTF_triy-$middle_y));
+    TTF_t5 = (TTF_Resolution/(TTF_triy-$higher_y));
+    TTF_dx2 = ((TTF_x2-$higher_x)*TTF_t5);
+    TTF_dz2 = ((TTF_z2-$higher_z)*TTF_t5);
+    TTF_du2 = ((TTF_u2-$higher_u)*TTF_t5);
+    TTF_dv2 = ((TTF_v2-$higher_v)*TTF_t5);
+    TTF_Fill_Tri_Until ($middle_y+((180-$middle_y)*($middle_y > 180))), ((TTF_x1-$middle_x)*TTF_t4), ((TTF_z1-$middle_z)*TTF_t4), ((TTF_u1-$middle_u)*TTF_t4), ((TTF_v1-$middle_v)*TTF_t4), TTF_dx2, TTF_dz2, TTF_du2, TTF_dv2;
     if ($middle_y > 180) {
         stop_this_script;
     }
-    INTERNAL__t2 = ((INTERNAL__triy-$middle_y)/($higher_y-$middle_y));
-    INTERNAL__x1 = ($middle_x+(($higher_x-$middle_x)*INTERNAL__t2));
-    INTERNAL__z1 = ($middle_z+(($higher_z-$middle_z)*INTERNAL__t2));
-    INTERNAL__u1 = ($middle_u+(($higher_u-$middle_u)*INTERNAL__t2));
-    INTERNAL__v1 = ($middle_v+(($higher_v-$middle_v)*INTERNAL__t2));
-    INTERNAL__t4 = (DISPLAY__Resolution/(INTERNAL__triy-$higher_y));
-    Fill_Tri_Until_target___s_point_1__s__s__s__s_point_2__s__s__s__s ($higher_y+((180-$higher_y)*($higher_y > 180))), ((INTERNAL__x1-$higher_x)*INTERNAL__t4), ((INTERNAL__z1-$higher_z)*INTERNAL__t4), ((INTERNAL__u1-$higher_u)*INTERNAL__t4), ((INTERNAL__v1-$higher_v)*INTERNAL__t4), INTERNAL__dx2, INTERNAL__dz2, INTERNAL__du2, INTERNAL__dv2;
+    TTF_t2 = ((TTF_triy-$middle_y)/($higher_y-$middle_y));
+    TTF_x1 = ($middle_x+(($higher_x-$middle_x)*TTF_t2));
+    TTF_z1 = ($middle_z+(($higher_z-$middle_z)*TTF_t2));
+    TTF_u1 = ($middle_u+(($higher_u-$middle_u)*TTF_t2));
+    TTF_v1 = ($middle_v+(($higher_v-$middle_v)*TTF_t2));
+    TTF_t4 = (TTF_Resolution/(TTF_triy-$higher_y));
+    TTF_Fill_Tri_Until ($higher_y+((180-$higher_y)*($higher_y > 180))), ((TTF_x1-$higher_x)*TTF_t4), ((TTF_z1-$higher_z)*TTF_t4), ((TTF_u1-$higher_u)*TTF_t4), ((TTF_v1-$higher_v)*TTF_t4), TTF_dx2, TTF_dz2, TTF_du2, TTF_dv2;
 }
 
 
-proc Fill_Tri_Until_target___s_point_1__s__s__s__s_point_2__s__s__s__s target, dx1, dz1, du1, dv1, dx2, dz2, du2, dv2 {
-    until (INTERNAL__triy > $target) {
-        INTERNAL__trix = (ceil(((INTERNAL__x1-((INTERNAL__x1-INTERNAL__x2)*(INTERNAL__x1 > INTERNAL__x2)))/DISPLAY__Resolution))*DISPLAY__Resolution);
-        INTERNAL__tri_target = (ceil(((INTERNAL__x2-((INTERNAL__x2-INTERNAL__x1)*(INTERNAL__x1 > INTERNAL__x2)))/DISPLAY__Resolution))*DISPLAY__Resolution);
-        INTERNAL__trix += ((abs(INTERNAL__trix) > 240)*(((INTERNAL__trix/abs(INTERNAL__trix))*240)-INTERNAL__trix));
-        INTERNAL__tri_target += ((abs(INTERNAL__tri_target) > 240)*(((INTERNAL__tri_target/abs(INTERNAL__tri_target))*240)-INTERNAL__tri_target));
-        INTERNAL__Divisions = abs(((INTERNAL__trix-INTERNAL__tri_target)/DISPLAY__Resolution));
-        INTERNAL__t3 = ((INTERNAL__trix-INTERNAL__x1)/(INTERNAL__x2-INTERNAL__x1));
-        INTERNAL__triz = (INTERNAL__z1+((INTERNAL__z2-INTERNAL__z1)*INTERNAL__t3));
-        INTERNAL__triu = (INTERNAL__u1+((INTERNAL__u2-INTERNAL__u1)*INTERNAL__t3));
-        INTERNAL__triv = (INTERNAL__v1+((INTERNAL__v2-INTERNAL__v1)*INTERNAL__t3));
-        INTERNAL__t3 = ((INTERNAL__tri_target-INTERNAL__x1)/(INTERNAL__x2-INTERNAL__x1));
-        INTERNAL__tridz = (((INTERNAL__z1+((INTERNAL__z2-INTERNAL__z1)*INTERNAL__t3))-INTERNAL__triz)/INTERNAL__Divisions);
-        INTERNAL__tridu = (((INTERNAL__u1+((INTERNAL__u2-INTERNAL__u1)*INTERNAL__t3))-INTERNAL__triu)/INTERNAL__Divisions);
-        INTERNAL__tridv = (((INTERNAL__v1+((INTERNAL__v2-INTERNAL__v1)*INTERNAL__t3))-INTERNAL__triv)/INTERNAL__Divisions);
-        INTERNAL__Index = (((INTERNAL__trix+240)/DISPLAY__Resolution)+(((INTERNAL__triy+180)*480)/(DISPLAY__Resolution*DISPLAY__Resolution)));
-        goto ((DISPLAY__Resolution/2)+INTERNAL__trix), ((DISPLAY__Resolution/2)+INTERNAL__triy);
-        repeat INTERNAL__Divisions {
-            if ((INTERNAL__triz > depth[INTERNAL__Index]) or (not (_3D__This_Frame == time[INTERNAL__Index]))) {
-                depth[INTERNAL__Index] = INTERNAL__triz;
-                time[INTERNAL__Index] = _3D__This_Frame;
-                set_pen_color loaded_texture_pixels[_3D__Texture_Offset+(floor((((INTERNAL__triu%1)/INTERNAL__triz)*_3D__Texture_Width))+(floor(((INTERNAL__triv/INTERNAL__triz)*_3D__Texture_Height))*_3D__Texture_Width))];
+proc TTF_Fill_Tri_Until target, dx1, dz1, du1, dv1, dx2, dz2, du2, dv2 {
+    until (TTF_triy > $target) {
+        TTF_trix = (ceil(((TTF_x1-((TTF_x1-TTF_x2)*(TTF_x1 > TTF_x2)))/TTF_Resolution))*TTF_Resolution);
+        TTF_tri_target = (ceil(((TTF_x2-((TTF_x2-TTF_x1)*(TTF_x1 > TTF_x2)))/TTF_Resolution))*TTF_Resolution);
+        TTF_trix += ((abs(TTF_trix) > 240)*(((TTF_trix/abs(TTF_trix))*240)-TTF_trix));
+        TTF_tri_target += ((abs(TTF_tri_target) > 240)*(((TTF_tri_target/abs(TTF_tri_target))*240)-TTF_tri_target));
+        TTF_Divisions = abs(((TTF_trix-TTF_tri_target)/TTF_Resolution));
+        TTF_t3 = ((TTF_trix-TTF_x1)/(TTF_x2-TTF_x1));
+        TTF_triz = (TTF_z1+((TTF_z2-TTF_z1)*TTF_t3));
+        TTF_triu = (TTF_u1+((TTF_u2-TTF_u1)*TTF_t3));
+        TTF_triv = (TTF_v1+((TTF_v2-TTF_v1)*TTF_t3));
+        TTF_t3 = ((TTF_tri_target-TTF_x1)/(TTF_x2-TTF_x1));
+        TTF_tridz = (((TTF_z1+((TTF_z2-TTF_z1)*TTF_t3))-TTF_triz)/TTF_Divisions);
+        TTF_tridu = (((TTF_u1+((TTF_u2-TTF_u1)*TTF_t3))-TTF_triu)/TTF_Divisions);
+        TTF_tridv = (((TTF_v1+((TTF_v2-TTF_v1)*TTF_t3))-TTF_triv)/TTF_Divisions);
+        TTF_Index = (((TTF_trix+240)/TTF_Resolution)+(((TTF_triy+180)*480)/(TTF_Resolution*TTF_Resolution)));
+        goto ((TTF_Resolution/2)+TTF_trix), ((TTF_Resolution/2)+TTF_triy);
+        repeat TTF_Divisions {
+            if ((TTF_triz > TTF_Depth[TTF_Index]) or (not (TTF_This_Frame == TTF_Time[TTF_Index]))) {
+                TTF_Depth[TTF_Index] = TTF_triz;
+                TTF_Time[TTF_Index] = TTF_This_Frame;
+                set_pen_color loaded_texture_pixels[TTF_Texture_Offset+(floor((((TTF_triu%1)/TTF_triz)*TTF_Texture_Width))+(floor(((TTF_triv/TTF_triz)*TTF_Texture_Height))*TTF_Texture_Width))];
                 pen_down;
             } else {
                 pen_up;
             }
-            INTERNAL__trix += DISPLAY__Resolution;
-            INTERNAL__triu += INTERNAL__tridu;
-            INTERNAL__triv += INTERNAL__tridv;
-            INTERNAL__triz += INTERNAL__tridz;
-            INTERNAL__Index++;
-            change_x DISPLAY__Resolution;
+            TTF_trix += TTF_Resolution;
+            TTF_triu += TTF_tridu;
+            TTF_triv += TTF_tridv;
+            TTF_triz += TTF_tridz;
+            TTF_Index++;
+            change_x TTF_Resolution;
         }
         pen_up;
-        INTERNAL__x1 += $dx1;
-        INTERNAL__z1 += $dz1;
-        INTERNAL__u1 += $du1;
-        INTERNAL__v1 += $dv1;
-        INTERNAL__x2 += $dx2;
-        INTERNAL__z2 += $dz2;
-        INTERNAL__u2 += $du2;
-        INTERNAL__v2 += $dv2;
-        INTERNAL__triy += DISPLAY__Resolution;
+        TTF_x1 += $dx1;
+        TTF_z1 += $dz1;
+        TTF_u1 += $du1;
+        TTF_v1 += $dv1;
+        TTF_x2 += $dx2;
+        TTF_z2 += $dz2;
+        TTF_u2 += $du2;
+        TTF_v2 += $dv2;
+        TTF_triy += TTF_Resolution;
     }
 }
 
-proc INTERNAL__Internal_Setup  {
-    last_resolution = DISPLAY__Resolution;
-    _3D__This_Frame = ((_3D__This_Frame+1)%256);
-    INTERNAL__Lim = (ceil((-180/DISPLAY__Resolution))*DISPLAY__Resolution);
-    delete fill_temp;
+
+proc TTF_internal_setup  {
+    last_resolution = TTF_Resolution;
+    TTF_This_Frame = (TTF_This_Frame + 1) % 256;
+    TTF_Lim = ceil(-180/TTF_Resolution) * TTF_Resolution;
+    delete TTF_Fill_Temp;
     repeat 15 {
-        add 0 to fill_temp;
+        add 0 to TTF_Fill_Temp;
     }
-    delete depth;
-    delete time;
-    repeat ((480*360)/(DISPLAY__Resolution*DISPLAY__Resolution)) {
-        add 0 to depth;
-        add 0 to time;
+    delete TTF_Depth;
+    delete TTF_Time;
+    repeat ((480*360)/(TTF_Resolution*TTF_Resolution)) {
+        add 0 to TTF_Depth;
+        add 0 to TTF_Time;
     }
 }
 
