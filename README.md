@@ -1,8 +1,10 @@
 # Factory Building [3D]
 
-![factory building](thumbnail.jpg)
+[**Scratch**](https://scratch.mit.edu/projects/773175240)  |  [**TurboWarp**](https://turbowarp.org/773175240)
 
-This project is a small demo of realistic 3D rendering in Scratch with baked raytraced lighting. Although textured 3D projects existed at the time (December 2022), this kind of baked lighting was unexplored.
+[![factory building](thumbnail.jpg)](https://scratch.mit.edu/projects/773175240)
+
+This project is a small demo of realistic 3D rendering in Scratch with baked raytraced lighting. Although textured 3D projects existed at the time it was originally shared (December 2022), this kind of baked lighting was unexplored.
 
 I continued with this idea and created [The Mast](https://scratch.mit.edu/projects/861541218), which is a proper game.
 
