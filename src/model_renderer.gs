@@ -3,7 +3,7 @@
 %include lib/common
 %include lib/transforms
 
-costumes "costumes/blank.svg";
+costumes "costumes/large.svg";
 hide;
 
 
@@ -14,7 +14,7 @@ list TTF_Time;
 var TTF_Resolution = 2; # Deliberately kept separate from global resolution var so the tri filler can be edited separately
 
 on "sys.initalize" {
-    TTF_internal_setup;
+    TTF_Internal_Setup;
 }
 
 on "sys.hard_reset" {
@@ -33,7 +33,7 @@ on "sys.render_geometry" {
     TTF_Resolution = resolution;
 
     if (TTF_Resolution < 1) { TTF_Resolution = 1; }
-    if (last_resolution != TTF_Resolution) { TTF_internal_setup; }
+    if (last_resolution != TTF_Resolution) { TTF_Internal_Setup; }
 
     # Render layers:
     if (show_render_layer_texture) { render_textured_scene; }
@@ -456,7 +456,7 @@ proc TTF_Fill_Tri_Until target, dx1, dz1, du1, dv1, dx2, dz2, du2, dv2 {
 }
 
 
-proc TTF_internal_setup  {
+proc TTF_Internal_Setup  {
     last_resolution = TTF_Resolution;
     TTF_This_Frame = (TTF_This_Frame + 1) % 256;
     TTF_Lim = ceil(-180/TTF_Resolution) * TTF_Resolution;

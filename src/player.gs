@@ -117,7 +117,7 @@ proc controls  {
 
     if (cam_mode == CameraFollowMode.FREE) {
         movement_speed = free_cam_speed;
-        if key_pressed(keybind_sprint) {
+        if ($tw_is_turbowarp and key_pressed("shift")) {
             movement_speed *= 4;
         }
 
@@ -125,7 +125,7 @@ proc controls  {
     
     } elif (cam_mode == CameraFollowMode.PLAYER) {
 
-        movement_speed = 2 + (key_pressed(keybind_sprint) * 1.5);
+        movement_speed = 2 + (($tw_is_turbowarp and key_pressed("shift")) * 1.5);
 
         vec_len = VEC2_LEN(desired_movement.x, desired_movement.y);
         player_ax = (desired_movement.x/vec_len) * movement_speed * 10;

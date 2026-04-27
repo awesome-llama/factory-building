@@ -19,8 +19,8 @@ on "sound.start" {
     if (true) { delete_this_clone; } # delete all clones and let the original sprite create new ones
     
     is_clone = false;
-    add_sound "electric_hum", 60, 5, 3.5, 1.5, 5, 9, 1; # near red light
-    add_sound "vent_fan", 100, 1.9, 19, 0.5, 10, 10, 2; # garage bench
+    add_sound "electric_hum", 50, 5, 3.5, 1.5, 10, 9, 1; # near red light
+    add_sound "vent_fan", 100, 1.9, 19, 0.5, 12, 10, 2; # garage bench
 }
 
 

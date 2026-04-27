@@ -53,9 +53,7 @@ var keybind_move_backward;
 var keybind_move_forward;
 var keybind_move_down;
 var keybind_move_up;
-var keybind_sprint;
 
-var look_method; # click and drag, pointerlock, 4 buttons
 var keybind_look_left;
 var keybind_look_right;
 var keybind_look_down;
@@ -70,9 +68,7 @@ proc reset_keybinds {
     keybind_move_forward = "W";
     keybind_move_down = "Q";
     keybind_move_up = "E";
-    keybind_sprint = "shift";
 
-    look_method = "click and drag"; # click and drag, pointerlock, 4 buttons
     keybind_look_left = "left arrow";
     keybind_look_right = "right arrow";
     keybind_look_down = "down arrow";
