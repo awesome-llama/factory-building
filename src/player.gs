@@ -31,6 +31,9 @@ on "sys.hard_reset" {
     player_x = 0.22;
     player_y = -2;
     player_z = 0;
+    player_vx = 0;
+    player_vy = 0;
+
     cam_x = player_x;
     cam_y = player_y;
     cam_z = player_z+eye_height;
@@ -110,10 +113,9 @@ proc controls  {
     desired_movement.x = (cos(cam_rot_z)*(key_pressed(keybind_move_right)-key_pressed(keybind_move_left))) - (sin(cam_rot_z)*(key_pressed(keybind_move_forward)-key_pressed(keybind_move_backward)));
     desired_movement.y = (sin(cam_rot_z)*(key_pressed(keybind_move_right)-key_pressed(keybind_move_left))) + (cos(cam_rot_z)*(key_pressed(keybind_move_forward)-key_pressed(keybind_move_backward)));
     desired_movement.z = (key_pressed(keybind_move_up)-key_pressed(keybind_move_down));
-    
+
 
     if (cam_mode == CameraFollowMode.FREE) {
-        # Free cam is for debugging and does not follow custom keybinds
         movement_speed = free_cam_speed;
         if key_pressed(keybind_sprint) {
             movement_speed *= 4;
@@ -126,9 +128,24 @@ proc controls  {
         movement_speed = 2 + (key_pressed(keybind_sprint) * 1.5);
 
         vec_len = VEC2_LEN(desired_movement.x, desired_movement.y);
-        player_x += ((dt*movement_speed)*(desired_movement.x/vec_len));
-        player_y += ((dt*movement_speed)*(desired_movement.y/vec_len));
-        
+        player_ax = (desired_movement.x/vec_len) * movement_speed * 10;
+        player_ay = (desired_movement.y/vec_len) * movement_speed * 10;
+
+        player_vx += player_ax * dt;
+        player_vy += player_ay * dt;
+        player_vx = (0.95-(dt*3)) * player_vx;
+        player_vy = (0.95-(dt*3)) * player_vy;
+
+        actual_speed = VEC2_LEN(player_vx, player_vy);
+        if (actual_speed > movement_speed) {
+            # limit speed
+            player_vx = (player_vx / actual_speed) * movement_speed;
+            player_vy = (player_vy / actual_speed) * movement_speed;
+        }
+
+        player_x += player_vx * dt;
+        player_y += player_vy * dt;
+
         get_floor_height player_x, player_y, player_z;
         if (abs(player_z-closest_tri_z) < SNAP_DISTANCE) {
             player_z = closest_tri_z;

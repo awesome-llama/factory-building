@@ -42,6 +42,9 @@ var player_x;
 var player_y;
 var player_z;
 
+var player_vx;
+var player_vy;
+
 # touch screen is not supported due to difficulties in supporting multi-touch (which is almost necessary)
 
 var keybind_move_left;
