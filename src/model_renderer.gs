@@ -270,7 +270,7 @@ proc render_textured_scene {
     repeat (length object_names) {
         if (objects[i+14]) { # in bounding box
 
-            TTF_Texture_Offset = 0;
+            TTF_Texture_Offset = 1;
             TTF_Texture_Width = 440;
             TTF_Texture_Height = 440;
 
