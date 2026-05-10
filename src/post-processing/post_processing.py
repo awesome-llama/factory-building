@@ -118,6 +118,26 @@ class ScratchProject:
     #       Common processes       #
     ################################
 
+
+    def list_items_to_numbers(self, list_name, target_name='Stage'):
+        """Convert list items that are strings into numbers, if valid as such."""
+
+        target = self.get_target_by_name(target_name)
+
+        list_content = target['lists'][list_name][1]
+        for i in range(len(list_content)):
+            try:
+                list_content[i] = int(list_content[i])
+                continue
+            except: pass
+            
+            try:
+                list_content[i] = float(list_content[i])
+                continue
+            except: pass
+
+
+
     def order_sprites(self, order=['_', 'main', 'cmd']):
         """Order the sprites following a list of sprite names. Sprites not in the list will be placed at the end."""
 
@@ -165,7 +185,6 @@ class ScratchProject:
         """Move the TurboWarp config comment"""
 
         twconfig_comment = self.get_comment_by_id('Stage', 'twconfig')
-        if not twconfig_comment: raise Exception('Comment not found')
 
         twconfig_comment['x'] = x
         twconfig_comment['y'] = y
@@ -176,9 +195,6 @@ class ScratchProject:
 
     def add_build_comment(self, header:str|None = None, target_name='_'):
         """Add an informative comment to a sprite"""
-
-        target = self.get_target_by_name(target_name)
-        if not target: raise Exception('Target not found')
 
         try:
             gs_ver = self.project_data['meta']['agent'].removeprefix('goboscript ')
