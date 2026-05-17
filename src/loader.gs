@@ -24,15 +24,21 @@ on "sys.initalize" {
 
 list region_data_items;
 
+list vtx_u;
+list vtx_v;
+
 
 proc clear_world {
     delete object_names;
     delete objects;
 
-    delete vtx_position;
+    delete vtx_position_os;
     delete vtx_position_ws;
     delete vtx_position_cs;
     delete vtx_position_ss;
+
+    delete vtx_u;
+    delete vtx_v;
 
     delete tri_vi0;
     delete tri_vi1;
@@ -121,14 +127,24 @@ proc load_region name {
         add false to objects; # is camera in bounding box
 
         # verts
-        add (length vtx_position) to objects; # start index
+        add (length vtx_position_os) to objects; # start index
         add region_data_items[i] to objects; # length
         repeat (region_data_items[i]) {
-            add VEC3(region_data_items[i+1]+"0", region_data_items[i+2]+"0", region_data_items[i+3]+"0") to vtx_position;
+            add VEC3(region_data_items[i+1]+"0", region_data_items[i+2]+"0", region_data_items[i+3]+"0") to vtx_position_os;
             add VEC3(0,0,0) to vtx_position_ws;
             add VEC3(0,0,0) to vtx_position_cs;
             add VEC3(0,0,0) to vtx_position_ss;
             i += 3;
+        }
+        i++;
+
+        # uv points
+        delete vtx_u;
+        delete vtx_v;
+        repeat (region_data_items[i]) {
+            add region_data_items[i+1]/10000 to vtx_u; # remap UVs 0-10000 to 0.0-1.0
+            add region_data_items[i+2]/10000 to vtx_v;
+            i += 2;
         }
         i++;
 
@@ -140,12 +156,12 @@ proc load_region name {
             add region_data_items[i+2]+"1" to tri_vi1;
             add region_data_items[i+3]+"1" to tri_vi2;
 
-            add VEC2(region_data_items[i+4]/10000, region_data_items[i+5]/10000) to tri_tex0; # rescale uvs to 0.0-1.0
-            add VEC2(region_data_items[i+6]/10000, region_data_items[i+7]/10000) to tri_tex1;
-            add VEC2(region_data_items[i+8]/10000, region_data_items[i+9]/10000) to tri_tex2;
+            add VEC2(vtx_u[region_data_items[i+4]+"1"], vtx_v[region_data_items[i+4]+"1"]) to tri_tex0;
+            add VEC2(vtx_u[region_data_items[i+5]+"1"], vtx_v[region_data_items[i+5]+"1"]) to tri_tex1;
+            add VEC2(vtx_u[region_data_items[i+6]+"1"], vtx_v[region_data_items[i+6]+"1"]) to tri_tex2;
 
             add VEC3(0,0,0) to tri_normal;
-            i += (3+6); # indices + UVs
+            i += (3 + 3); # indices + UVs
         }
     }
     i++;

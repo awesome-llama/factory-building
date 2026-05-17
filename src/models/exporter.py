@@ -83,11 +83,12 @@ def get_triangles(obj):
     return triangles
 
 
-def get_vertices_and_triangles(mesh, vert_index_offset=0):
+def get_mesh(mesh, vert_index_offset=0):
     """
     Takes a bpy.types.Mesh and returns:
       vertices: [(x, y, z), ...]
-      triangles: [[v0, v1, v2, u0, v0, u1, v1, u2, v2], ...]
+      uvs: [(u, v), ...]
+      triangles: [[v0, v1, v2, uv0, uv1, uv2], ...]
     """
 
     mesh.calc_loop_triangles()
@@ -98,6 +99,9 @@ def get_vertices_and_triangles(mesh, vert_index_offset=0):
     if uv_layer is None: raise RuntimeError("Mesh has no active UV map")
 
     triangles = []
+    uv_points = []
+    uv_points_lookup = {}
+    uv_points_lookup_count = 0
 
     for tri in mesh.loop_triangles:
         tri_verts = list(tri.vertices)
@@ -112,11 +116,18 @@ def get_vertices_and_triangles(mesh, vert_index_offset=0):
         # Add UVs per loop
         for loop_idx in tri_loops:
             uv = uv_layer.data[loop_idx].uv
-            tri_data.extend([int(round(uv.x*10000)), int(round(uv.y*10000))]) # unclamped just in case
+            uv_rounded = (int(round(uv.x*10000)), int(round(uv.y*10000)))
+
+            if uv_rounded not in uv_points_lookup:
+                uv_points_lookup[uv_rounded] = uv_points_lookup_count
+                uv_points.append(uv_rounded)
+                uv_points_lookup_count += 1
+            
+            tri_data.append(uv_points_lookup[uv_rounded])
 
         triangles.append(tri_data)
 
-    return vertices, triangles
+    return vertices, uv_points, triangles
 
 
 
@@ -129,12 +140,16 @@ for region_name in REGIONS:
     region_visible_objects = []
     visible_objects_total = 0
     vertex_total = 0 # objects of a region all share the same list of verts and need offset indices
+    uv_total = 0
+    tri_total = 0
 
     region_walls = []
     walls_total = 0
+    wall_seg_total = 0
 
     region_floors = []
     floors_total = 0
+    floor_tri_total = 0
 
     collection = D.collections[region_name]
     for object in collection.objects.values():
@@ -144,11 +159,15 @@ for region_name in REGIONS:
         if object_name[0] != region_name: continue
 
         if object_name[1] == 'WL': # Wall
-            region_walls.extend(get_line_segments(object))
+            ls = get_line_segments(object)
+            region_walls.extend(ls)
+            wall_seg_total += len(ls)
             walls_total += 1
 
         elif object_name[1] == 'FL': # Floor object
-            region_floors.extend(get_triangles(object))
+            ft = get_triangles(object)
+            region_floors.extend(ft)
+            floor_tri_total += len(ft)
             floors_total += 1
 
         elif object_name[1] == 'VZ' or object_name[1] == 'DY': # Visible mesh
@@ -159,9 +178,11 @@ for region_name in REGIONS:
             
             bb_min, bb_max = get_bounding_box_from_modifier(object)
             
-            verts, tris = get_vertices_and_triangles(object.data, vertex_total)
+            verts, uvs, tris = get_mesh(object.data, vertex_total)
             
             vertex_total += len(verts)
+            uv_total += len(uvs)
+            tri_total += len(tris)
             
             ro = []
             ro.append(object.name) # name
@@ -170,6 +191,7 @@ for region_name in REGIONS:
             ro.append(object.material_slots[0].name) # material
             ro.extend([simplify(v, 4) for v in list(bb_min) + list(bb_max)]) # bounding box
             ro.extend(create_length_prefixed_list(verts)) # verts
+            ro.extend(create_length_prefixed_list(uvs)) # uv points
             ro.extend(create_length_prefixed_list(tris)) # tris
             region_visible_objects.append(ro)
             
@@ -177,12 +199,15 @@ for region_name in REGIONS:
             
         else:
             pass #print('unknown object')
-    
-    print(f"Object count: {visible_objects_total} visible, {walls_total} walls, {floors_total} floors")
+
+    print(f"  {visible_objects_total} visible objects containing {vertex_total} verts, {uv_total} UVs, {tri_total} tris.")
+    print(f"  {walls_total} walls containing {wall_seg_total} segments.")
+    print(f"  {floors_total} floors containing {floor_tri_total} tris.")
+
 
     output.append(stringify_scratch([region_name] + create_length_prefixed_list(region_visible_objects) + create_length_prefixed_list(region_walls) + create_length_prefixed_list(region_floors)) + '\n')
 
-    
+
 
 
 with open('region_names.txt', 'w') as f:
@@ -192,6 +217,3 @@ with open('regions.txt', 'w') as f:
     f.writelines(output)
 
 print("Finished!")
-
-
-

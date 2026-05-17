@@ -111,7 +111,7 @@ list loaded_texture_pixels "models/texture.txt";
 list object_names;
 list objects; # loaded object data
 
-list XYZ vtx_position; # object space
+list XYZ vtx_position_os; # object space
 list XYZ vtx_position_ws; # world space
 list XYZ vtx_position_cs; # camera space
 list XYZ vtx_position_ss; # screen space
@@ -121,7 +121,7 @@ list tri_vi0;
 list tri_vi1;
 list tri_vi2;
 
-# texture location (UV)
+# cached texture location (UV)
 list XY tri_tex0;
 list XY tri_tex1;
 list XY tri_tex2;

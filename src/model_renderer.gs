@@ -73,9 +73,9 @@ proc apply_object_transform all {
             j = objects[i+15] + 1;
             repeat (objects[i+16]) {
                 vtx_position_ws[j] = VEC3(
-                    object_location.x + vtx_position[j].x,
-                    object_location.y + vtx_position[j].y,
-                    object_location.z + vtx_position[j].z
+                    object_location.x + vtx_position_os[j].x,
+                    object_location.y + vtx_position_os[j].y,
+                    object_location.z + vtx_position_os[j].z
                 );
                 j++;
             }
