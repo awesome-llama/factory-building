@@ -73,6 +73,8 @@ onkey "f" {
         player_z = cam_z-eye_height;
     } else {
         cam_mode = CameraFollowMode.FREE;
+        player_vx = 0;
+        player_vy = 0;
     }
 }
 
