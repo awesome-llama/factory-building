@@ -21,7 +21,7 @@ with post_processing.ScratchProject(PATH_TARGET_PROJECT, PATH_TARGET_PROJECT_PEN
     target = project.get_target_by_name('model_renderer')
     target['costumes'].append({
         "name": "texture",
-        "bitmapResolution": 1,
+        "bitmapResolution": 2,
         "dataFormat": "png",
         "assetId": asset_hash,
         "md5ext": asset_hash + ".png",
