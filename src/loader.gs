@@ -7,7 +7,7 @@ hide;
 
 
 on "sys.hard_reset" {
-    requested_region = "pod";
+    requested_region = "main";
     region = "";
 
     clear_world;
