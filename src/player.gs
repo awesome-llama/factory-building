@@ -44,7 +44,7 @@ on "sys.hard_reset" {
 }
 
 
-on "sys.initalize" {
+on "sys.initialize" {
     step_x = player_x;
     step_y = player_y;
 }

@@ -13,7 +13,7 @@ list TTF_Time;
 
 var TTF_Resolution = 2; # Deliberately kept separate from global resolution var so the tri filler can be edited separately
 
-on "sys.initalize" {
+on "sys.initialize" {
     TTF_Internal_Setup;
 }
 

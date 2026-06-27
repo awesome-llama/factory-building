@@ -14,7 +14,7 @@ on "sys.hard_reset" {
 }
 
 
-on "sys.initalize" {
+on "sys.initialize" {
     if (length object_names == 0) {
         broadcast "sys.load_region";
     }

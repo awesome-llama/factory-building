@@ -171,7 +171,7 @@ onflag {
         first_time_playing = false;
     }
 
-    broadcast "sys.initalize"; # all receivers must complete within the frame, no loops allowed to start. Think of it as a soft reset.
+    broadcast "sys.initialize"; # all receivers must complete within the frame, no loops allowed to start. Think of it as a soft reset.
     broadcast "sys.start_main_loop"; # schedule main loop start after init
     broadcast "sound.start";
 }
