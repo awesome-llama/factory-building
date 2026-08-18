@@ -16,10 +16,9 @@ I continued with this idea and created [The Mast](https://scratch.mit.edu/projec
 * Textured triangle filler by [BamBozzle](https://scratch.mit.edu/users/bambozzle/)
 * Footstep sounds: https://freesound.org/people/julius_galla/sounds/434895/
 
-
 ## Dependencies
 
-- [goboscript](https://github.com/aspizu/goboscript/) commit `54143f0`
+- [goboscript](https://github.com/aspizu/goboscript/) commit `104fd6f`
 - Python 3.14
 - Blender 5.1
 
