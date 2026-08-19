@@ -8,8 +8,8 @@ hide;
 
 
 list TTF_fill_temp;
-list TTF_depth;
-list TTF_time;
+list TTF_depth_buffer;
+list TTF_time_buffer;
 
 var TTF_resolution = 2; # Deliberately kept separate from global resolution var so the tri filler can be edited separately
 
@@ -19,8 +19,8 @@ on "sys.initialize" {
 
 on "sys.hard_reset" {
     delete TTF_fill_temp;
-    delete TTF_depth;
-    delete TTF_time;
+    delete TTF_depth_buffer;
+    delete TTF_time_buffer;
 }
 
 
@@ -427,10 +427,10 @@ proc TTF_fill_tri_until target, dx1, dz1, du1, dv1, dx2, dz2, du2, dv2 {
         TTF_index = (((TTF_trix+240)/TTF_resolution)+(((TTF_triy+180)*480)/(TTF_resolution*TTF_resolution)));
         goto ((TTF_resolution/2)+TTF_trix), ((TTF_resolution/2)+TTF_triy);
         repeat TTF_divisions {
-            if ((TTF_triz > TTF_depth[TTF_index]) or (TTF_this_frame != TTF_time[TTF_index])) {
-                TTF_depth[TTF_index] = TTF_triz;
-                TTF_time[TTF_index] = TTF_this_frame;
-                set_pen_color loaded_texture_pixels[TTF_texture_offset+(floor((((TTF_triu%1)/TTF_triz)*TTF_texture_width))+(floor(((TTF_triv/TTF_triz)*TTF_texture_height))*TTF_texture_width))];
+            if ((TTF_triz > TTF_depth_buffer[TTF_index]) or (TTF_this_frame != TTF_time_buffer[TTF_index])) {
+                TTF_depth_buffer[TTF_index] = TTF_triz;
+                TTF_time_buffer[TTF_index] = TTF_this_frame;
+                set_pen_color loaded_texture_pixels[TTF_texture_offset + floor(((TTF_triu%1)/TTF_triz)*TTF_texture_width) + floor((TTF_triv/TTF_triz)*TTF_texture_height)*TTF_texture_width];
                 pen_down;
             } else {
                 pen_up;
@@ -464,11 +464,11 @@ proc TTF_internal_setup  {
     repeat 15 {
         add 0 to TTF_fill_temp;
     }
-    delete TTF_depth;
-    delete TTF_time;
+    delete TTF_depth_buffer;
+    delete TTF_time_buffer;
     repeat ((480*360)/(TTF_resolution*TTF_resolution)) {
-        add 0 to TTF_depth;
-        add 0 to TTF_time;
+        add 0 to TTF_depth_buffer;
+        add 0 to TTF_time_buffer;
     }
 }
 
